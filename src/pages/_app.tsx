@@ -5,10 +5,8 @@ import React from 'react'
 
 
 function MyApp({ Component, pageProps }) {
-  return (
-    <ChallengersProvider>
-      <Component {...pageProps} />
-    </ChallengersProvider>
+  return (   
+      <Component {...pageProps} />  
   )
 }
 

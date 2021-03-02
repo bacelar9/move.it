@@ -1,8 +1,9 @@
 import { createContext, useState, ReactNode, useEffect } from 'react';
+import Cookies from 'js-cookie';
 import challenges from '../../challenges.json';
 
 interface Challenge {
-    type:'body' | 'eye';
+    type: 'body' | 'eye';
     description: string;
     amount: number;
 }
@@ -13,7 +14,7 @@ interface ChallengersContextData {
     ChallengersCompleted: number;
     experienceToNextLevel: number;
     activeChallenge: Challenge;
-    levelUp:() => void;
+    levelUp: () => void;
     startNewChallenge: () => void;
     resetChallenge: () => void;
     completeChallenge: () => void;
@@ -21,14 +22,20 @@ interface ChallengersContextData {
 
 interface ChallengersProviderProps {
     children: ReactNode
+    level: number,
+    CurrentExperience: number
+    ChallengersCompleted: number
 }
 
 export const ChallengersContext = createContext({} as ChallengersContextData);
 
-export function ChallengersProvider({ children }: ChallengersProviderProps) {
-    const [level, setLevel] = useState(1);
-    const [CurrentExperience, setCurrentExperience] = useState(0)
-    const [ChallengersCompleted, setChallengersCompleted] = useState(0)
+export function ChallengersProvider({ 
+    children, 
+    ...rest  
+}: ChallengersProviderProps) {
+    const [level, setLevel] = useState(rest.level ?? 1);
+    const [CurrentExperience, setCurrentExperience] = useState(rest.CurrentExperience ?? 0)
+    const [ChallengersCompleted, setChallengersCompleted] = useState(rest.ChallengersCompleted ?? 0)
     const [activeChallenge, setActiveChallenge] = useState(null)
 
     const experienceToNextLevel = Math.pow((level + 1) * 4, 2)
@@ -36,6 +43,12 @@ export function ChallengersProvider({ children }: ChallengersProviderProps) {
     useEffect(() => {
         Notification.requestPermission();
     }, [])
+
+    useEffect(() => {
+        Cookies.set('level', String(level)) //pode ser tambem -> level.toString
+        Cookies.set('CurrentExperience', String(CurrentExperience))
+        Cookies.set('ChallengersCompleted', String(ChallengersCompleted))
+    }, [level, CurrentExperience, ChallengersCompleted])
 
     function levelUp() {
         setLevel(level + 1)
@@ -49,14 +62,14 @@ export function ChallengersProvider({ children }: ChallengersProviderProps) {
 
         new Audio('/notification.mp3').play()
 
-        if(Notification.permission === 'granted'){
+        if (Notification.permission === 'granted') {
             new Notification('Novo Desafio', {
                 body: `Valendo ${challenge.amount}xp!`
             })
         }
     }
 
-    function resetChallenge () {
+    function resetChallenge() {
         setActiveChallenge(null)
     }
 
